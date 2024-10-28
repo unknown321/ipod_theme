@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Change to the current script's directory
+cd "$(dirname "$0")"
+cargo r --release -- --device=nano6

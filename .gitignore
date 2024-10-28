@@ -5,3 +5,8 @@
 .DS_Store
 build.sh
 *.bin
+*.bin2
+*.pyc
+*.ipsw
+/body
+*.LE

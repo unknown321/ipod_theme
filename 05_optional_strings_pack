@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Change to the current script's directory
+cd "$(dirname "$0")"
+./silverutil/target/release/silverutil create SilverDB.en_GB.LE SilverDB.en_GB.LE.bin2

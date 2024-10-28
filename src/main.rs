@@ -16,6 +16,10 @@ use std::path::Path;
 use std::process::Command;
 use tracing::{info, Level};
 use zip::ZipArchive;
+use std::fs::File;
+use std::io::{Write, BufWriter, Seek};
+use walkdir::WalkDir;
+use zip::write::FileOptions;
 
 #[derive(Debug, ValueEnum, Copy, Clone)]
 pub enum Device {
@@ -30,6 +34,39 @@ struct Args {
     /// Which device to build a payload for
     #[arg(short, long)]
     device: Device,
+}
+
+fn zip_dir<T>(src_dir: &str, target: T) -> zip::result::ZipResult<()>
+where
+    T: Write + Seek,
+{
+    #![allow(deprecated)]
+    let mut zip_writer = zip::ZipWriter::new(target);
+    let options = FileOptions::default()
+        .compression_method(zip::CompressionMethod::Stored)
+        .unix_permissions(0o755);
+
+    let walkdir = WalkDir::new(src_dir);
+    let mut buffer = Vec::new();
+
+    for entry in walkdir.into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        let name = path.strip_prefix(Path::new(src_dir)).unwrap();
+
+        if path.is_file() {
+            println!("Adding file {:?} as {:?}", path, name);
+            zip_writer.start_file_from_path(name, options)?;
+            let mut f = File::open(path)?;
+            f.read_to_end(&mut buffer)?;
+            zip_writer.write_all(&buffer)?;
+            buffer.clear();
+        } else if !name.as_os_str().is_empty() {
+            println!("Adding directory {:?}", name);
+            zip_writer.add_directory_from_path(name, options)?;
+        }
+    }
+    zip_writer.finish()?;
+    Ok(())
 }
 
 fn main() -> anyhow::Result<()> {
@@ -49,7 +86,7 @@ fn main() -> anyhow::Result<()> {
     std::fs::write("./in-cff.bin", bytes)?;
 
     info!("Converting font to OTF");
-    Command::new("python")
+    Command::new("python3")
         .arg("./helpers/cff_to_otf.py")
         .status()
         .unwrap();
@@ -96,7 +133,7 @@ fn main() -> anyhow::Result<()> {
             std::fs::write("rsrc.bin", &img1.body)?;
             std::fs::write("in-otf.bin", otf_bytes)?;
 
-            Command::new("python")
+            Command::new("python3")
                 .arg("./helpers/fat_patch.py")
                 .status()?;
 
@@ -120,12 +157,32 @@ fn main() -> anyhow::Result<()> {
     if let Device::Nano6 = args.device {
         mse_out[0x5004..][..4].copy_from_slice(b"soso");
         mse_out[0x5144..][..4].copy_from_slice(b"ksid");
+        std::fs::write("./iPod_1.2_36B10147/Firmware.MSE", &mse_out)?;
+        let src_dir = "./iPod_1.2_36B10147";
+        let zip_file_path = "./iPod_1.2_36B10147_repack.ipsw";
+    
+        let file = File::create(zip_file_path)?;
+        let writer = BufWriter::new(file);
+    
+        match zip_dir(src_dir, writer) {
+            Ok(_) => println!("Successfully zipped the directory!"),
+            Err(e) => println!("Error zipping the directory: {:?}", e),
+        }
     } else {
         mse_out[0x5004..][..4].copy_from_slice(b"soso");
         mse_out[0x5194..][..4].copy_from_slice(b"ksid");
+        std::fs::write("./iPod_1.1.2_39A10023/Firmware.MSE", &mse_out)?;
+        let src_dir = "./iPod_1.1.2_39A10023";
+        let zip_file_path = "./iPod_1.1.2_39A10023_repack.ipsw";
+    
+        let file = File::create(zip_file_path)?;
+        let writer = BufWriter::new(file);
+    
+        match zip_dir(src_dir, writer) {
+            Ok(_) => println!("Successfully zipped the directory!"),
+            Err(e) => println!("Error zipping the directory: {:?}", e),
+        }
     }
-
-    std::fs::write("./Firmware-repack.MSE", &mse_out)?;
 
     Ok(())
 }
