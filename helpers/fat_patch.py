@@ -1,4 +1,5 @@
 import fs
+from pathlib import Path
 from pyfatfs import PyFatFS
 from fontTools import ttLib, subset
 import base64
@@ -9,7 +10,7 @@ import os
 fat = PyFatFS.PyFatFS("./rsrc.bin", read_only=False)
 print(fat.listdir('/Resources/UI'))
 
-FONT_BASE = "/Resources/Fonts/Helvetica.ttf"
+FONT_BASE = "/Resources/Fonts/"
 IMAGE_BASE = "/Resources/UI/SilverImagesDB.LE.bin"
 EN_BASE = "/Resources/UI/SilverDB.en_GB.LE.bin"
 
@@ -23,34 +24,43 @@ with fat.openbin(EN_BASE, mode="rb") as b:
     with open("./SilverDB.en_GB.LE.bin", 'wb') as output_file:
         output_file.write(file_content)
 
-'''
-# Read the file, get its name
-b = fat.openbin(FONT_BASE, mode="rb")
-original_font = ttLib.TTFont(b)
-original_font_name_table = original_font["name"]
-b.close()
 
-# Remove the old font
-fat.remove(FONT_BASE)
+for root, dirs, files in os.walk("./Fonts"):
+    for file in files:
+        if file.endswith(".ttf"):
+            print("Processing " + file + "...")
+            custom_ttf_path = os.path.join(root, file)
 
-# Open the file to write our font
-b = fat.openbin(FONT_BASE, mode="wb")
+            # Read the file, get its name
+            system_ttf_path = os.path.join(FONT_BASE, file)
+            try:
+                b = fat.openbin(system_ttf_path, mode="rb")
+                original_font = ttLib.TTFont(b)
+                original_font_name_table = original_font["name"]
+                b.close()
 
-with open("./in-otf.bin", "rb") as f:
-    fake_font = ttLib.TTFont(f)
-    fake_font["name"] = original_font_name_table
-    fake_font["CFF "].cff[0].CharStrings["space"].calcBounds = lambda x: None
+                # Remove the old font
+                fat.remove(system_ttf_path)
 
-    fake_font.save(b)
+                # Open the file to write our font
+                b = fat.openbin(system_ttf_path, mode="wb")
 
-b.close()
-'''
+                with open(custom_ttf_path, "rb") as f:
+                    fake_font = ttLib.TTFont(f)
+                    fake_font["name"] = original_font_name_table
+                    print("Replacing " + file +"...")
+                    fake_font.save(b)
+
+                b.close()
+            except Exception as e:
+                print(f"An error occurred while opening {system_ttf_path}: {e}")
 
 if os.path.exists("./SilverImagesDB.LE.bin2"):
     fat.remove(IMAGE_BASE)
     b = fat.openbin(IMAGE_BASE, mode="wb")
     with open("./SilverImagesDB.LE.bin2", "rb") as local_file:
         file_data = local_file.read()
+        print("Replacing SilverImagesDB...")
         b.write(file_data)
     b.close()
 else:
@@ -61,6 +71,7 @@ if os.path.exists("./SilverDB.en_GB.LE.bin2"):
     b = fat.openbin(EN_BASE, mode="wb")
     with open("./SilverDB.en_GB.LE.bin2", "rb") as local_file:
         file_data = local_file.read()
+        print("Replacing SilverDB...")
         b.write(file_data)
     b.close()
 else:

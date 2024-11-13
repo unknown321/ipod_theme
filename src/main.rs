@@ -6,8 +6,8 @@ mod img1;
 mod mse;
 mod payload;
 
-use crate::exploit::create_cff;
-use crate::payload::exploit_config::{ExploitConfigN6G, ExploitConfigN7G};
+// use crate::exploit::create_cff;
+// use crate::payload::exploit_config::{ExploitConfigN6G, ExploitConfigN7G};
 use anyhow::anyhow;
 use clap::{Parser, ValueEnum};
 use isahc::ReadResponseExt;
@@ -76,6 +76,7 @@ fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
 
+    /* 
     // Generate exploit font
     info!("Building CFF exploit");
     let bytes = match args.device {
@@ -94,6 +95,7 @@ fn main() -> anyhow::Result<()> {
     std::fs::remove_file("./in-cff.bin")?;
     let otf_bytes = std::fs::read("./out-otf.bin")?;
     std::fs::remove_file("./out-otf.bin")?;
+    */
 
     info!("Unpacking MSE");
     let mut mse = if let Device::Nano6 = args.device {
@@ -131,7 +133,7 @@ fn main() -> anyhow::Result<()> {
         {
             info!("Patching FATFS");
             std::fs::write("rsrc.bin", &img1.body)?;
-            std::fs::write("in-otf.bin", otf_bytes)?;
+            // std::fs::write("in-otf.bin", otf_bytes)?;
 
             Command::new("python3")
                 .arg("./helpers/fat_patch.py")
@@ -139,7 +141,7 @@ fn main() -> anyhow::Result<()> {
 
             let rsrc_data = std::fs::read("./rsrc.bin")?;
             std::fs::remove_file("./rsrc.bin")?;
-            std::fs::remove_file("./in-otf.bin")?;
+            // std::fs::remove_file("./in-otf.bin")?;
             img1.body = rsrc_data;
         }
         info!("Repacking RSRC Img1");

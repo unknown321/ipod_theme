@@ -7,7 +7,9 @@ cargo build --release
 cd ..
 ./silverutil/target/release/silverutil extract SilverDB.en_GB.LE.bin SilverDB.en_GB.LE
 OS_TYPE=$(uname)
-if [ "$OS_TYPE" = "Darwin" ]; then
+if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+    notepad.exe `wslpath -w "$(pwd)/SilverDB.en_GB.LE/Str .yaml"`
+elif [ "$OS_TYPE" = "Darwin" ]; then
 	open -t './SilverDB.en_GB.LE/Str .yaml'
 else
     open './SilverDB.en_GB.LE/Str .yaml'

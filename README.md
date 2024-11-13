@@ -1,5 +1,5 @@
 # ipod_theme
-Theme your iPod nano 7th and 6th generation with custom icons, wallpapers, clock faces, change or hide labels, and more. Based on [ipod_sun](https://github.com/CUB3D/ipod_sun), [ipodhax](https://github.com/760ceb3b9c0ba4872cadf3ce35a7a494/ipodhax), and [silverutil](https://github.com/spotlightishere/silverutil), who collectively made 99.9% of the research and code to get us here.
+Theme your iPod nano 7th and 6th generation with custom icons, wallpapers, clock faces, change or hide labels, apply custom font, and more. Based on [ipod_sun](https://github.com/CUB3D/ipod_sun), [ipodhax](https://github.com/760ceb3b9c0ba4872cadf3ce35a7a494/ipodhax), and [silverutil](https://github.com/spotlightishere/silverutil), who collectively made 99.9% of the research and code to get us here.
 
 Have fun, then share your themes and setup with [r/ipod](https://www.reddit.com/r/ipod/)!
 
@@ -9,44 +9,51 @@ Before using `ipod_theme`, you need to install some dependencies first.
 
 [1] If you are running macOS or Linux, launch the Terminal app. If you are running Windows, install [Linux on Windows with WSL](https://learn.microsoft.com/windows/wsl/install), launch Ubuntu from the Start menu or Windows Terminal app, and follow instructions for Linux.
 
-[2] If you're running macOS, install Homebrew, add it to the PATH environment, then install `arm-none-eabi-gcc`:
+[2] Only if you're running macOS, install Homebrew and add it to the PATH environment:
 
 ```shell
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 echo >> ~/.zprofile
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
+```
+
+[3] Only if you're running macOS, install `arm-none-eabi-gcc`:
+
+```shell
 brew install arm-none-eabi-gcc
 ```
 
-[3] If you're running Linux, install `pkg-config`, `libssl-dev`, `python3-pip`, and `gcc-arm-none-eabi`:
+[4] Only if you're running Linux, install `xdg-utils`, `unzip`, `pkg-config`, `libssl-dev`, `python3-pip`, and `gcc-arm-none-eabi`:
 
 ```shell
-sudo apt install pkg-config libssl-dev python3-pip gcc-arm-none-eabi
+sudo apt update && sudo apt install xdg-utils unzip pkg-config libssl-dev python3-pip gcc-arm-none-eabi -y
 ```
 
-[4] Install Rust and add it to the PATH environment. When asked to proceed with standard installation, just press enter:
+[5] Install Rust. When asked to proceed with standard installation, just press enter:
 
 ```shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+[6] Add Rust to the PATH environment.
+
+```shell
 . "$HOME/.cargo/env"
 ```
 
-
-[5] Install `pyfatfs`, `fonttools`, and `pillow`:
+[7] Install `pyfatfs`, `fonttools`, and `pillow`:
 
 ```shell
-pip3 install --break-system-packages pyfatfs fonttools pillow
+export PIP_BREAK_SYSTEM_PACKAGES=1 && pip3 install pyfatfs fonttools pillow
 ```
 
 #### 1) Download and unpack iPod firmware:
 
-- [Click here to download ipod_theme](https://github.com/nfzerox/ipod_theme/archive/refs/heads/master.zip) and unzip it.
-
-- cd into path to downloaded repository, adjusting path if necessary:
+- Download and unzip `ipod_theme`, then cd into unzipped path:
 
 ```shell
-cd ~/Downloads/ipod_theme-master
+mkdir -p ~/Downloads && cd ~/Downloads && curl -L -o ipod_theme-master.zip "https://github.com/nfzerox/ipod_theme/archive/refs/heads/master.zip" && unzip -o ipod_theme-master.zip && cd ipod_theme-master
 ```
 
 - For iPod nano 7th generation, run:
@@ -66,10 +73,24 @@ Note: The custom firmware for iPod nano 7th generation will be automatically mod
 
 #### 2) Unpack and update artwork:
 
+- Unpack the artwork.
+
 ```shell
 python3 ./02_art_unpack.py
+```
+
+- For macOS or Linux, open the `body` folder with:
+
+```shell
 open ./body
 ```
+
+- For Linux on Windows with WSL, open the `body` folder with:
+
+```shell
+explorer.exe `wslpath -w $(pwd)/body`
+```
+
 This opens the unpacked `body` folder, which contains all artwork including icons, wallpapers, clock faces, and more.
 
 When replacing any artwork, your new artwork must exactly match the resolution and color format of the original. The color format is specified in the suffix of the artwork:
@@ -81,7 +102,7 @@ When replacing any artwork, your new artwork must exactly match the resolution a
 - `*_0565.png`: RGB565
 - `*_1888.png`: Any RGB with alpha
 
-If the original artwork doesn't end with `_1888.png`, and your new artwork contains a larger number of total colors than the original, you must use Indexed Color in Photoshop to reduce the total number of colors. After reducing the total number of colors with Photoshop, you may need to open and re-save the processed artwork using Preview.
+If the original artwork doesn't end with `_1888.png`, and your new artwork contains a larger number of total colors than the original, you must use Indexed Color in Photoshop to reduce the total number of colors. After reducing the total number of colors with Photoshop, open and re-save the processed artwork using Preview (Mac) or Paint (Windows).
 
 If you don't have Photoshop or don't want to reduce the total number of colors, you can also delete the original artwork, then save yours as `*********_1888.png`. For example, delete `229442246_0065.png` and save yours as `229442246_1888.png`.
 
@@ -102,25 +123,45 @@ If it fails, the failing artwork is the one after the last successful artwork. C
 
 If you want to remove all custom artwork and start over, repeat step 2.
 
-#### 4) Unpack English (UK) translations (optional):
+#### 4) Unpack and repack English (UK) translations (optional):
 
 ```shell
 ./04_optional_strings_unpack
 ```
-Paste the command above as-is into Terminal. While it may seem weird, the extra space between `Str` and `.yaml` is required.
+This unpacks and opens English (UK) translations in the default text editor. You may edit values after `!String ` as you see fit. Unless you're trying to hide a label, the space character between `!String` and the translation is required.
 
-This opens English (UK) translations in the default text editor. You may edit values after `!String ` as you see fit. Unless you're trying to hide a label, the space character between `!String` and the translation is required.
+To change app labels on the Home Screen, use Command+F to find the second instance of `Music`. This is where app label translations begin. You can change or delete `Music` from the line, and repeat the same for other app names.
 
-To change app labels on the Home Screen, use Command+F to find the second instance of `Music`. This is where app label translations begin. You can change or delete `Music` from the line, and repeat the same for other app names. Save your changes when you're done.
+The `iTunes U` app is hidden from iPod by default unless you've synced an iTunes U lecture from iTunes. The label for `iTunes U` is not translated and cannot be hidden.
 
-Note: The `iTunes U` app is hidden from iPod by default unless you've synced an iTunes U lecture from iTunes. The label for `iTunes U` is not translated and cannot be hidden.
-
-#### 5) Repack English (UK) translations (optional):
+Once you're done, save your changes and run:
 
 ```shell
 ./05_optional_strings_pack
 ```
 This packs your custom translations into `SilverDB.en_GB.LE.bin2`, which automatically gets used in step 6.
+
+#### 5) Apply custom font (optional):
+
+Find your favorite font on [Google Fonts](https://fonts.google.com/), then click Get Font > Download all. Unzip your download, then drill into the `static` folder.
+
+Rename the font that ends in `-Regular.ttf` into `Helvetica.ttf`. Rename the font that ends in `-Bold.ttf` into `HelveticaBold.ttf`.
+
+- For macOS or Linux, open the `Fonts` folder with:
+
+```shell
+open ./Fonts
+```
+
+- For Linux on Windows with WSL, open the `Fonts` folder with:
+
+```shell
+explorer.exe `wslpath -w $(pwd)/Fonts`
+```
+
+Copy `Helvetica.ttf` and `HelveticaBold.ttf` into the `Fonts` folder.
+
+Tip: Not all fonts are compatible with iPod nano. If your iPod fails to boot after applying a custom font, try a different font, or remove your custom fonts from the `Fonts` folder.
 
 #### 6) Repack iPod firmware:
 
@@ -144,6 +185,18 @@ If you see `pyfatfs._exceptions.PyFATException: Not enough free space to allocat
 For iPod nano 7th generation, the repacked firmware is called `iPod_1.1.2_39A10023_repack.ipsw`. It is automatically modified to be compatible with both 2012 and 2015 variants, so you don't have to worry about which variant you have.
 
 For iPod nano 6th generation, the repacked firmware is called `iPod_1.2_36B10147_repack.ipsw`.
+
+- For macOS or Linux, open the folder that contains the repacked firmware with:
+
+```shell
+open .
+```
+
+- For Linux on Windows with WSL, open the folder that contains the repacked firmware with:
+
+```shell
+explorer.exe .
+```
 
 #### 7) Flash custom firmware:
 
