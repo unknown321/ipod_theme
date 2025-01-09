@@ -173,14 +173,26 @@ fn main() -> anyhow::Result<()> {
     } else {
         mse_out[0x5004..][..4].copy_from_slice(b"soso");
         mse_out[0x5194..][..4].copy_from_slice(b"ksid");
-        std::fs::write("./iPod_1.1.2_39A10023/Firmware.MSE", &mse_out)?;
-        let src_dir = "./iPod_1.1.2_39A10023";
-        let zip_file_path = "./iPod_1.1.2_39A10023_repack.ipsw";
+        std::fs::write("./iPod_1.1.2_39A10023_2012/Firmware.MSE", &mse_out)?;
+        let src_dir = "./iPod_1.1.2_39A10023_2012";
+        let zip_file_path = "./iPod_1.1.2_39A10023_2012_repack.ipsw";
     
         let file = File::create(zip_file_path)?;
         let writer = BufWriter::new(file);
     
         match zip_dir(src_dir, writer) {
+            Ok(_) => println!("Successfully zipped the directory!"),
+            Err(e) => println!("Error zipping the directory: {:?}", e),
+        }
+
+        std::fs::write("./iPod_1.1.2_39A10023_2015/Firmware.MSE", &mse_out)?;
+        let src_dir15 = "./iPod_1.1.2_39A10023_2015";
+        let zip_file_path15 = "./iPod_1.1.2_39A10023_2015_repack.ipsw";
+    
+        let file15 = File::create(zip_file_path15)?;
+        let writer15 = BufWriter::new(file15);
+    
+        match zip_dir(src_dir15, writer15) {
             Ok(_) => println!("Successfully zipped the directory!"),
             Err(e) => println!("Error zipping the directory: {:?}", e),
         }

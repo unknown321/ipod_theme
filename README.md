@@ -69,8 +69,6 @@ mkdir -p ~/Downloads && cd ~/Downloads && curl -L -o ipod_theme-master.zip "http
 ```
 Make sure you only run the unpack command that matches your iPod model. This automatically downloads the latest firmware, then extracts artwork and translation binaries from it. It will also generate a custom firmware that isn't themed, which you can safely ignore.
 
-Note: The custom firmware for iPod nano 7th generation will be automatically modified to be compatible with both 2012 and 2015 variants, so you don't have to worry about which variant you have.
-
 #### 2) Unpack and update artwork:
 
 - Unpack the artwork.
@@ -182,7 +180,7 @@ If you see any error in purple or pink, the firmware repack has failed. Even if 
 
 If you see `pyfatfs._exceptions.PyFATException: Not enough free space to allocate ******** bytes (******** bytes free)`, it means the repack failed because your replacement artwork is too large. You can subtract those two numbers and divide it by 1000 to determine how many KB of extra artwork to shave off. Then repeat step 2-3, but with fewer artwork replacements, or with reduced number of colors using Indexed Color with Photoshop, then try step 6 again.
 
-For iPod nano 7th generation, the repacked firmware is called `iPod_1.1.2_39A10023_repack.ipsw`. It is automatically modified to be compatible with both 2012 and 2015 variants, so you don't have to worry about which variant you have.
+For iPod nano 7th generation (2012), the repacked firmware is called `iPod_1.1.2_39A10023_2012_repack.ipsw`. For iPod nano 7th generation (2015), the repacked firmware is called `iPod_1.1.2_39A10023_2015_repack.ipsw`.
 
 For iPod nano 6th generation, the repacked firmware is called `iPod_1.2_36B10147_repack.ipsw`.
 
